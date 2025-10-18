@@ -1,0 +1,149 @@
+// This is your Prisma schema file for the Resume Builder
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Note: Users are managed by Supabase Auth
+// We don't store users in Prisma, just reference their IDs
+
+// User profile with contact information
+model UserProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique // References Supabase Auth user ID
+  
+  name      String
+  mobile    String
+  email     String
+  linkedin  String?
+  portfolio String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Experience types enum
+enum ExperienceType {
+  work
+  internship
+  education
+  exchange
+  academic_project
+  leadership
+  volunteer
+  club
+  competition
+  technical_skills
+  language_skills
+  certifications
+  interests
+  hobbies
+  sports
+  personal
+}
+
+// Project status enum
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+  SUBMITTED
+  INTERVIEW
+  REJECTED
+  ACCEPTED
+}
+
+// Experience blocks that users can add to their library
+model Experience {
+  id        String           @id @default(cuid())
+  userId    String           // References Supabase Auth user ID
+  
+  types     ExperienceType[] // Array of types - allows experience in multiple sections
+  title     String
+  company   String?
+  dateRange String?
+  bullets   Json             // Array of bullet points
+  tags      String[]         // Array of tags
+  keywords  String[]         // Array of keywords for matching
+  
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([userId])
+}
+
+// Project - represents one job application
+model Project {
+  id          String        @id @default(cuid())
+  userId      String        // References Supabase Auth user ID
+  
+  title       String        // e.g., "Software Engineer at Google"
+  company     String?
+  jobUrl      String?
+  status      ProjectStatus @default(ACTIVE)
+  tags        String[]
+  notes       String?       @db.Text
+  
+  resume      Resume?
+  jobAnalysis JobAnalysis?
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, updatedAt])
+}
+
+// Resume drafts and saved versions
+model Resume {
+  id        String   @id @default(cuid())
+  userId    String   // References Supabase Auth user ID
+  
+  projectId String?  @unique
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  title     String
+  content   Json     // Stores droppedItems structure from the demo
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, updatedAt])
+  @@index([projectId])
+}
+
+// Job analysis results
+model JobAnalysis {
+  id              String   @id @default(cuid())
+  userId          String   // References Supabase Auth user ID
+  
+  projectId       String?  @unique
+  project         Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  jobUrl          String?
+  jobName         String?  // Extracted job title
+  companyName     String?  // Extracted company name
+  companyWebsite  String?  // Company website URL
+  jobScope        String?  @db.Text // Job scope/responsibilities
+  jobDescription  String   @db.Text
+  skills          String[] // Extracted skills/experience
+  values          String[] // Company values
+  keywords        String[] // Extracted keywords
+  recruiterNotes  String?  @db.Text // AI-generated insights
+  
+  analyzedAt      DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, analyzedAt])
+  @@index([projectId])
+}
