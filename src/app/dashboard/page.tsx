@@ -20,8 +20,9 @@ export default function DashboardPage() {
     if (!isLoading && projectsData) {
       const projects = projectsData.projects;
       // If user has projects, redirect to the most recent one
-      if (projects.length > 0) {
-        router.push(`/projects/${projects[0].id}`);
+      const firstProject = projects[0];
+      if (firstProject) {
+        router.push(`/projects/${firstProject.id}`);
       }
     }
   }, [isLoading, projectsData, router]);
