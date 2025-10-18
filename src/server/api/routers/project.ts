@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { ProjectStatus } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 export const projectRouter = createTRPCRouter({
   // Get all projects for the current user
@@ -206,7 +207,7 @@ export const projectRouter = createTRPCRouter({
                 create: {
                   userId: ctx.userId,
                   title: `${original.resume.title} (Copy)`,
-                  content: original.resume.content,
+                  content: original.resume.content as Prisma.InputJsonValue,
                 },
               }
             : undefined,
