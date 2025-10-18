@@ -39,8 +39,14 @@ export function BulletEditor({ bullets, onChange }: BulletEditorProps) {
 
     const newBullets = [...bullets];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    [newBullets[index], newBullets[targetIndex]] = [newBullets[targetIndex], newBullets[index]];
-    onChange(newBullets);
+    
+    // Swap using temporary variable (type-safe)
+    const temp = newBullets[index];
+    if (temp !== undefined && newBullets[targetIndex] !== undefined) {
+      newBullets[index] = newBullets[targetIndex]!;
+      newBullets[targetIndex] = temp;
+      onChange(newBullets);
+    }
   };
 
   const getRandomVerb = () => {
