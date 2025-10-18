@@ -60,7 +60,7 @@ export function ExperienceCard({ experience, onEdit }: ExperienceCardProps) {
     personal: 'Personal',
   };
 
-  const bullets = Array.isArray(experience.bullets) ? experience.bullets : [];
+  const bullets = Array.isArray(experience.bullets) ? (experience.bullets as string[]) : [];
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 hover:border-gray-300">
@@ -96,7 +96,7 @@ export function ExperienceCard({ experience, onEdit }: ExperienceCardProps) {
               {bullets.slice(0, 2).map((bullet, idx) => (
                 <li key={idx} className="flex gap-2">
                   <span className="text-gray-400">•</span>
-                  <span className="flex-1">{bullet}</span>
+                  <span className="flex-1">{String(bullet)}</span>
                 </li>
               ))}
               {bullets.length > 2 && (
